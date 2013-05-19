@@ -3,13 +3,14 @@
   "description": "Trackr app",
   "repository": {
     "type": "git",
-    "url": "https://github.com/gimmi/trackr"
+    "url": "git://github.com/gimmi/trackr.git"
   },
   "version": "0.0.1",
   "private": true,
   "dependencies": {
     "express": "3.x",
-    "mongoose": "3.x"
+    "mongoose": "3.x",
+    "mongoose-text-search": "0.0.x"
   },
   "devDependencies": {
     "jasmine-node": "1.x",
