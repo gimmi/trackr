@@ -4,11 +4,14 @@ var mongoose = require('mongoose'),
 	models = require('./models');
 
 exports.getItems = function (req, res) {
-	models.Item.find(function (err, items) {
+	var text = req.param('text');
+
+	models.Item.textSearch(text, function (err, searchResult) {
 		if (err) {
 			res.json(500, err);
 		} else {
-			res.json(items);
+			searchResult.results.forEach(function (result, index, results) { results[index] = result.obj; });
+			res.json(searchResult.results);
 		}
 	});
 };
