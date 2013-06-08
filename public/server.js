@@ -3,7 +3,7 @@
 angular.module('app').factory('appServerSvc', ['$q', '$http', function (q, http) {
 	return {
 		findItems: function (query) {
-			return http.get('/api/items').then(function(ret) {
+			return http.get('/api/items', { params: { text: query } }).then(function(ret) {
 				if (ret.status !== 200) {
 					throw new Error('HTTP ' + ret.status);
 				}
