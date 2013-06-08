@@ -6,14 +6,24 @@ var mongoose = require('mongoose'),
 exports.getItems = function (req, res) {
 	var text = req.param('text');
 
-	models.Item.textSearch(text, function (err, searchResult) {
-		if (err) {
-			res.json(500, err);
-		} else {
-			searchResult.results.forEach(function (result, index, results) { results[index] = result.obj; });
-			res.json(searchResult.results);
-		}
-	});
+	if (!text) {
+		models.Item.find(function (err, items) {
+			if (err) {
+				res.send(500, err.message);
+			} else {
+				res.json(items);
+			}
+		});
+	} else {
+		models.Item.textSearch(text, function (err, searchResult) {
+			if (err) {
+				res.send(500, err.message);
+			} else {
+				searchResult.results.forEach(function (result, index, results) { results[index] = result.obj; });
+				res.json(searchResult.results);
+			}
+		});
+	}
 };
 
 exports.getItem = function (req, res) {
@@ -21,7 +31,7 @@ exports.getItem = function (req, res) {
 
 	models.Item.findById(id, function (err, item) {
 		if (err) {
-			res.send(500, err);
+			res.send(500, err.message);
 		} else if (item) {
 			res.json(item);
 		} else {
@@ -33,7 +43,7 @@ exports.getItem = function (req, res) {
 exports.postItem = function (req, res) {
 	new models.Item(req.body).save(function (err, item) {
 		if (err) {
-			res.send(500, err);
+			res.send(500, err.message);
 		} else {
 			res.location('/api/items/' + item.id);
 			res.send(201);
@@ -47,7 +57,7 @@ exports.putItem = function (req, res) {
 
 	models.Item.findById(id, function (err, item) {
 		if (err) {
-			res.send(500, err);
+			res.send(500, err.message);
 		} else if (item) {
 			item.title = newItem.title;
 			item.tags = newItem.tags;
@@ -70,7 +80,7 @@ exports.getComments = function (req, res) {
 
 	models.Item.findById(id, function (err, item) {
 		if (err) {
-			res.send(500, err);
+			res.send(500, err.message);
 		} else if (item) {
 			models.Comment.find({ itemId: item.id }, function (err, comments) {
 				if (err) {
@@ -91,7 +101,7 @@ exports.getComment = function (req, res) {
 
 	models.Comment.findOne({ _id: commentId, itemId: itemId }, function (err, comment) {
 		if (err) {
-			res.send(500, err);
+			res.send(500, err.message);
 		} else if (comment) {
 			res.json(comment);
 		} else {
@@ -106,7 +116,7 @@ exports.postComment = function (req, res) {
 
 	models.Item.findById(itemId, function (err, item) {
 		if (err) {
-			res.send(500, err);
+			res.send(500, err.message);
 		} else if (item) {
 			var comment = new models.Comment(req.body);
 			comment.timestamp = new Date();
@@ -134,7 +144,7 @@ exports.getTags = function (req, res) {
 		{ $limit: 10 },
 		function (err, tags) {
 			if (err) {
-				res.send(500, err);
+				res.send(500, err.message);
 			} else {
 				tags.forEach(function (tag, index, tags) { tags[index] = tag._id; });
 				res.json(tags);

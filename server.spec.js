@@ -2,6 +2,7 @@ var http = require('http');
 var mongoose = require('mongoose');
 var Q = require('q');
 var app = require('./server');
+var models = require('./models');
 
 describe('server', function () {
 	var server, sockets;
@@ -11,8 +12,12 @@ describe('server', function () {
 
 		server = http.createServer(app);
 
+		// mongoose.set('debug', true);
+
 		mongoose.connect('mongodb://localhost/trackr_tests', function (err) {
 			if (err) { done(err); return; }
+
+			models.Item.ensureIndexes(); // Without this, full text queries trow error
 
 			server.listen(8090, function () { done(); });
 		});
@@ -31,6 +36,19 @@ describe('server', function () {
 	it('should get all items', function (done) {
 		addToCollection('items', { _id: '518e5b6d96661c4008000002', title: 'title 1', body: 'body 1', tags: ['tag1'] }).then(function () {
 			return request({ path: '/api/items' });
+		}).then(function (ret) {
+			expect(ret.statusCode).toBe(200);
+			expect(ret.data).toEqual(jasmine.any(Array));
+			expect(ret.data.length).toEqual(1);
+			expect(ret.data[0]).toEqual({ id: '518e5b6d96661c4008000002', title: 'title 1', body: 'body 1', tags: ['tag1'] });
+
+			done();
+		}).fail(done);
+	});
+
+	it('should get items matching text search', function (done) {
+		addToCollection('items', { _id: '518e5b6d96661c4008000002', title: 'title 1', body: 'body 1', tags: ['tag1'] }).then(function () {
+			return request({ path: '/api/items?text=tag1' });
 		}).then(function (ret) {
 			expect(ret.statusCode).toBe(200);
 			expect(ret.data).toEqual(jasmine.any(Array));
